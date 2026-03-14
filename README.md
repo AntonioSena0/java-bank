@@ -29,6 +29,7 @@ A estrutura de pacotes principal fica em `src/main/java/org/example`
 
 - Criação e gerenciamento de contas bancárias.
 - Operações de depósito, saque e transferência com regras básicas de validação.
+- Visão de administrador com controle de transações e contas.
 
 ### Como executar o projeto
 
