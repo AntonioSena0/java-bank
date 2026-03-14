@@ -45,19 +45,82 @@ public class TransactionController {
             switch (op){
 
                 case 1:
-                    this.listAllTransactions();
+                    try {
+                        this.listAllTransactions();
+                        break;
+                    } catch (Exception e){
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 2:
-                    System.out.println("Qual o id da transação");
-                    String id_transaction = sc.nextLine();
-                    UUID transaction_id = UUID.fromString(id_transaction);
-                    this.listTransaction(transaction_id);
+                    try {
+                        System.out.println("Qual o id da transação");
+                        String id_transaction = sc.nextLine();
+                        UUID transaction_id = UUID.fromString(id_transaction);
+                        while (this.listTransaction(transaction_id) == null){
+                            System.out.println("Entrada inválida. Digite uma chave válida");
+                            System.out.print("Chave: ");
+                            id_transaction = sc.nextLine();
+                            transaction_id = UUID.fromString(id_transaction);
+                        }
+                        Transaction transaction = listTransaction(transaction_id);
+                        System.out.println();
+                        System.out.println("==== Transação Encontrada ====");
+                        System.out.print("Id da transação: ");
+                        System.out.println(transaction.getId());
+                        System.out.print("Tipo: ");
+                        System.out.println(transaction.getType());
+                        System.out.print("Quantidade: ");
+                        System.out.println(transaction.getAmount());
+                        System.out.print("Data: ");
+                        System.out.println(transaction.getDate());
+                        System.out.print("Chave da conta que enviou: ");
+                        System.out.println(transaction.getId_account());
+                        if(transaction.getTo_account() != null) {
+                            System.out.print("Chave da conta que recebeu: ");
+                            System.out.println(transaction.getTo_account());
+                        }
+                        System.out.println("===============================");
+                        break;
+                    } catch (Exception e){
+                        System.out.println("Invalid id");
+                    }
                     break;
                 case 3:
-                    System.out.println("Qual o id da conta");
-                    String id_account = sc.nextLine();
-                    UUID account_id = UUID.fromString(id_account);
-                    this.findAccount(account_id);
+                    try {
+
+                        System.out.println("Qual o id da conta");
+                        String id_account = sc.nextLine();
+                        UUID account_id = UUID.fromString(id_account);
+                        while (this.findAccount(account_id) == null){
+                            System.out.println("Entrada inválida. Digite uma chave válida");
+                            System.out.print("Chave: ");
+                            id_account = sc.nextLine();
+                            account_id = UUID.fromString(id_account);
+                        }
+
+                        Account account = this.findAccount(account_id);
+
+                        System.out.println();
+                        System.out.println("==== Conta Encontrada ====");
+                        System.out.print("Dono da conta: ");
+                        System.out.println(account.getId_costumer());
+                        System.out.print("Id da conta: ");
+                        System.out.println(account.getId());
+                        System.out.print("Saldo: ");
+                        System.out.println(account.getBalance());
+                        System.out.print("Tipo da conta: ");
+                        System.out.println(account.getAccountType());
+                        System.out.print("Transações feitas até agora: ");
+                        this.viewHistory(account.getId());
+                        System.out.println("==========================");
+
+                        break;
+
+                    } catch (Exception e){
+                        System.out.println("Invalid id");
+                    }
+
                     break;
                 case 0:
                     System.out.println("Logout realizado com sucesso");
@@ -91,57 +154,34 @@ public class TransactionController {
 
     }
 
-    public void listTransaction(UUID id){
+    public Transaction listTransaction(UUID id){
 
         try {
             Transaction transaction = service.findTransaction(id);
 
-            System.out.println("==== Transação Encontrada ====");
-            System.out.print("Id da transação: ");
-            System.out.println(transaction.getId());
-            System.out.print("Tipo: ");
-            System.out.println(transaction.getType());
-            System.out.print("Quantidade: ");
-            System.out.println(transaction.getAmount());
-            System.out.print("Data: ");
-            System.out.println(transaction.getDate());
-            System.out.print("Chave da conta que enviou: ");
-            System.out.println(transaction.getId_account());
-            if(transaction.getTo_account() != null) {
-                System.out.print("Chave da conta que recebeu: ");
-                System.out.println(transaction.getTo_account());
-            }
-            System.out.println("===============================");
+            return transaction;
 
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
 
+        return null;
+
     }
 
-    public void findAccount(UUID id){
+    public Account findAccount(UUID id){
 
         try {
 
             Account account = accountService.find(id);
 
-
-            System.out.println("==== Conta Encontrada ====");
-            System.out.print("Dono da conta: ");
-            System.out.println(account.getId_costumer());
-            System.out.print("Id da conta: ");
-            System.out.println(account.getId());
-            System.out.print("Saldo: ");
-            System.out.println(account.getBalance());
-            System.out.print("Tipo da conta: ");
-            System.out.println(account.getAccountType());
-            System.out.print("Transações feitas até agora: ");
-            this.viewHistory(account.getId());
-            System.out.println("==========================");
+            return account;
 
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
+
+        return null;
 
     }
 

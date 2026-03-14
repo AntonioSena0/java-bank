@@ -45,7 +45,7 @@ public class app {
         TransactionController transCtrl = new TransactionController(transService, accountService, sc);
         CostumerController customerCtrl = new CostumerController(customerService, sc);
 
-        customerCtrl.create(new Customer("admin@system.com", "admin123456", UserType.ADMIN));
+        customerCtrl.create(new Customer("admin@gmail.com", "admin123456", UserType.ADMIN));
         app application = new app(accountCtrl, customerCtrl, transCtrl, sc);
         application.run();
     }
