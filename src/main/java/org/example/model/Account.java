@@ -3,6 +3,7 @@ package org.example.model;
 import org.example.enums.AccountType;
 import org.example.enums.TransactionType;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.UUID;
@@ -41,18 +42,18 @@ public class Account {
         return transactionList;
     }
 
-    public void deposit(UUID id, double value) {
+    public void deposit(UUID id, double value, TransactionType type) {
 
         if(value <= 0){
             throw new IllegalArgumentException("Valor inválido: " + value);
         }
 
         this.balance = this.getBalance() + value;
-        transactionList.add(new Transaction(TransactionType.DEPOSIT, value, id));
+        transactionList.push(new Transaction(type, value, LocalDate.now() ,id));
 
     }
 
-    public void withdraw(UUID id, double value) {
+    public void withdraw(UUID id, double value, TransactionType type) {
 
         if(value <= 0){
             throw new IllegalArgumentException("Valor inválido: " + value);
@@ -63,7 +64,7 @@ public class Account {
         }
 
         this.balance = this.getBalance() - value;
-        transactionList.add(new Transaction(TransactionType.WITHDRAW, value, id));
+        transactionList.push(new Transaction(type, -value, LocalDate.now(), id));
 
     }
 

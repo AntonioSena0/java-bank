@@ -1,5 +1,7 @@
 package org.example.model;
 
+import org.example.enums.UserType;
+
 import java.util.UUID;
 
 public class Customer {
@@ -9,6 +11,7 @@ public class Customer {
     private String email;
     private String password;
     private String document;
+    private UserType role = UserType.CLIENT;
 
     public Customer(String email, String password) {
         this.email = email;
@@ -20,6 +23,12 @@ public class Customer {
         this.email = email;
         this.password = password;
         this.document = document;
+    }
+
+    public Customer(String email, String password, UserType role) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 
     public UUID getId() {
@@ -58,4 +67,11 @@ public class Customer {
         this.document = document;
     }
 
+    public UserType getRole() {
+        return role;
+    }
+
+    public void setRole(UserType role) {
+        this.role = role;
+    }
 }

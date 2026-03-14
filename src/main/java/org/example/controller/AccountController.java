@@ -2,19 +2,24 @@ package org.example.controller;
 
 import org.example.enums.AccountType;
 import org.example.model.Account;
-import org.example.service.Account.AccountService;
+import org.example.model.Transaction;
+import org.example.service.AccountService;
+import org.example.service.TransactionService;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 import java.util.UUID;
 
 public class AccountController {
 
     private final AccountService service;
+    private final TransactionService transactionService;
     private final Scanner sc;
 
-    public AccountController(AccountService service, Scanner sc) {
+    public AccountController(AccountService service, TransactionService transactionService, Scanner sc) {
         this.service = service;
+        this.transactionService = transactionService;
         this.sc = sc;
     }
 
@@ -50,16 +55,26 @@ public class AccountController {
 
                     case 1:
                         System.out.println("Qual o saldo inicial da conta?");
+                        while (!sc.hasNextDouble()){
+                            System.out.println("Entrada inválida. Digite um valor real");
+                            sc.next();
+                            System.out.println("Valor: ");
+                        }
                         double initialBalance = sc.nextDouble();
                         sc.nextLine();
 
                         System.out.println("A conta vai ser corrente ou poupança?");
                         String tipo = sc.nextLine();
+                        while(!tipo.equalsIgnoreCase("corrente") && !tipo.equalsIgnoreCase("poupança")){
+                            System.out.println("Escolha um tipo válido! (corrente/poupança)");
+                            tipo = sc.nextLine();
+                        }
+
                         AccountType type;
 
-                        if(tipo.contains("corrente")){
+                        if(tipo.equals("corrente")){
                             type = AccountType.CheckingAccount;
-                        } else if(tipo.contains("poupança")){
+                        } else if(tipo.equals("poupança")){
                             type = AccountType.SavingsAccount;
                         } else {
                             System.out.println("Inválido");
@@ -85,11 +100,12 @@ public class AccountController {
                 System.out.println("3. Depósitar");
                 System.out.println("4. Saque");
                 System.out.println("5. Transferir");
+                System.out.println("6. Histórico de Transferências");
                 System.out.println("0. Logout");
                 System.out.print("Escolha: ");
 
                 while (!sc.hasNextInt()) {
-                    System.out.println("Entrada inválida. Digite um número (0, 1, 2, 3, 4 ou 5).");
+                    System.out.println("Entrada inválida. Digite um número (0, 1, 2, 3, 4, 5, 6).");
                     sc.next();
                     System.out.print("Escolha: ");
                 }
@@ -101,16 +117,26 @@ public class AccountController {
 
                     case 1:
                         System.out.println("Qual o saldo inicial da conta?");
+                        while (!sc.hasNextDouble()){
+                            System.out.println("Entrada inválida. Digite um valor real");
+                            sc.next();
+                            System.out.print("Valor: ");
+                        }
                         double initialBalance = sc.nextDouble();
                         sc.nextLine();
 
                         System.out.println("A conta vai ser corrente ou poupança?");
                         String tipo = sc.nextLine();
+                        while(!tipo.equalsIgnoreCase("corrente") && !tipo.equalsIgnoreCase("poupança")){
+                            System.out.println("Escolha um tipo válido! (corrente/poupança)");
+                            tipo = sc.nextLine();
+                        }
+
                         AccountType type;
 
-                        if(tipo.contains("corrente")){
+                        if(tipo.equals("corrente")){
                             type = AccountType.CheckingAccount;
-                        } else if(tipo.contains("poupança")){
+                        } else if(tipo.equals("poupança")){
                             type = AccountType.SavingsAccount;
                         } else {
                             System.out.println("Inválido");
@@ -119,9 +145,18 @@ public class AccountController {
 
                         Account newAccount = this.create(new Account(initialBalance, type, id));
 
-                        System.out.println("Conta criada com sucesso, caso queira entrar nessa conta, faça o logout e insira o número correspondente a ela");
-                        System.out.println(newAccount.getId());
+                        String res = "";
 
+                        while(!res.equals("S") && !res.equals("N")){
+                            System.out.println("Deseja utilizar essa conta? (S/N)");
+                            res = sc.nextLine();
+                        }
+                        if(res.equals("S")){
+                            currentAccount = newAccount.getId();
+                        } else {
+                            System.out.println("Caso queira entrar nessa nova conta, selecione a chave correspondente a ela");
+                            System.out.println(newAccount.getId());
+                        }
                         break;
 
                     case 2:
@@ -131,30 +166,67 @@ public class AccountController {
 
                     case 3:
 
+                        double valueDeposit;
+
                         System.out.println("Quanto você quer depositar?");
-                        double valueDeposit = sc.nextDouble();
+                        while (!sc.hasNextDouble()){
+                            System.out.println("Entrada inválida. Digite um valor real");
+                            sc.next();
+                            System.out.print("Valor: ");
+                        }
+                        valueDeposit = sc.nextDouble();
                         sc.nextLine();
 
                         this.deposit(currentAccount, valueDeposit);
                         break;
 
                     case 4:
+
+                        double valueWithdraw;
+
                         System.out.println("Quanto você quer resgatar?");
-                        double valueWithdraw = sc.nextDouble();
+                        while (!sc.hasNextDouble()){
+                            System.out.println("Entrada inválida. Digite um valor real");
+                            sc.next();
+                            System.out.print("Valor: ");
+                        }
+                        valueWithdraw = sc.nextDouble();
                         sc.nextLine();
 
                         this.withdraw(currentAccount, valueWithdraw);
                         break;
 
                     case 5:
-                        System.out.println("Quanto você quer transferir?");
-                        double valueTransfer = sc.nextDouble();
-                        sc.nextLine();
-                        System.out.println("Qual a chave?");
-                        String value = sc.nextLine();
-                        UUID key = UUID.fromString(value);
 
-                        this.transfer(currentAccount, valueTransfer, key);
+                        double valueTransfer;
+
+                        System.out.println("Quanto você quer transferir?");
+                        while (!sc.hasNextDouble()){
+                            System.out.println("Entrada inválida. Digite um valor real");
+                            sc.next();
+                            System.out.print("Valor: ");
+                        }
+                        valueTransfer = sc.nextDouble();
+                        sc.nextLine();
+                        try {
+                            System.out.println("Qual a chave?");
+                            String value = sc.nextLine();
+                            UUID key = UUID.fromString(value);
+                            while (this.find(key) == null){
+                                System.out.println("Entrada inválida. Digite uma chave válida");
+                                System.out.print("Chave: ");
+                                value = sc.nextLine();
+                                key = UUID.fromString(value);
+                            }
+                            transfer(currentAccount, valueTransfer, key);
+                            break;
+                        } catch (Exception e){
+                            System.out.println("invalid key");
+                        }
+                        break;
+
+                    case 6:
+                        viewHistory(currentAccount);
                         break;
 
                     case 0:
@@ -184,9 +256,10 @@ public class AccountController {
         } catch (Exception e) {
 
             System.out.println(e.getMessage());
-            return null;
 
         }
+
+        return null;
 
     }
 
@@ -199,10 +272,10 @@ public class AccountController {
         } catch (Exception e) {
 
             System.out.println(e.getMessage());
-            return null;
 
         }
 
+        return null;
     }
 
     public void findAllAccounts(UUID id) {
@@ -266,9 +339,10 @@ public class AccountController {
         } catch (Exception e) {
 
             System.out.println(e.getMessage());
-            return null;
 
         }
+
+        return null;
 
     }
 
@@ -276,7 +350,7 @@ public class AccountController {
 
         try {
 
-            service.deposit(id, value);
+            transactionService.deposit(id, value);
             System.out.println("Valor depositado com sucesso!");
 
         } catch (Exception e) {
@@ -290,7 +364,7 @@ public class AccountController {
 
         try {
 
-            service.withdraw(id, value);
+            transactionService.withdraw(id, value);
             System.out.println("Valor resgatado com sucesso!");
 
         } catch (Exception e) {
@@ -305,10 +379,41 @@ public class AccountController {
 
         try {
 
-            service.transfer(id, to_id, value);
+            transactionService.transfer(id, to_id, value);
             System.out.println("Valor transferido com sucesso!");
 
         } catch (Exception e) {
+
+            System.out.println(e.getMessage());
+
+        }
+
+    }
+
+    public void viewHistory(UUID id){
+
+        try {
+
+            Stack<Transaction> transactions = service.listTransactions(id);
+
+            if (transactions.isEmpty()) {
+                System.out.println("Nenhuma transação encontrada.");
+                return;
+            }
+
+            Stack<Transaction> copy = (Stack<Transaction>) transactions.clone();
+
+            System.out.println();
+            System.out.println("==== Histórico ====");
+            while(!copy.isEmpty()){
+                Transaction t = copy.pop();
+                System.out.println(t.getType());
+                System.out.println(t.getAmount());
+                System.out.println(t.getDate());
+                System.out.println("===================");
+            }
+
+        } catch (Exception e){
 
             System.out.println(e.getMessage());
 

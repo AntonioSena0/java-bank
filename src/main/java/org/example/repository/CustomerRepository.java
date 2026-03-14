@@ -10,6 +10,7 @@ public interface CustomerRepository {
 
     Customer create(Customer customer);
     Customer findByEmail(String email) throws AccountNotFoundException;
+    Customer find(UUID id) throws AccountNotFoundException;
     UUID login(Customer customer) throws AccountNotFoundException, LoginException;
 
 }

@@ -1,4 +1,4 @@
-package org.example.service.Costumer;
+package org.example.service;
 
 import org.example.model.Customer;
 import org.example.repository.CustomerRepositoryImpl;
@@ -18,6 +18,12 @@ public class CustomerService {
     public Customer create(Customer request){
 
         return repository.create(request);
+
+    }
+
+    public Customer findById(UUID id) throws AccountNotFoundException{
+
+        return repository.find(id);
 
     }
 

@@ -1,5 +1,6 @@
 package org.example.repository;
 
+import org.example.enums.TransactionType;
 import org.example.model.Account;
 import org.example.model.Transaction;
 
@@ -11,60 +12,6 @@ public class AccountRepositoryImpl implements AccountRepository{
 
     private final HashMap<UUID, Account> accounts = new HashMap<>();
     private final HashMap<UUID, List<Account>> accountsLogin = new HashMap<>();
-
-    @Override
-    public void deposit(UUID id, double value) throws AccountNotFoundException{
-
-        Account account = accounts.get(id);
-
-        if(account == null){
-            throw new AccountNotFoundException("Conta não existente");
-        }
-
-        account.deposit(account.getId(), value);
-
-    }
-
-    @Override
-    public void withdraw(UUID id, double value) throws InsufficientResourcesException, AccountNotFoundException{
-
-        Account account = accounts.get(id);
-
-        if(account == null){
-            throw new AccountNotFoundException("Conta não existente");
-        }
-
-        if(value > account.getBalance()) {
-            throw new InsufficientResourcesException("Saldo insuficiente");
-        }
-
-        account.withdraw(id, value);
-
-    }
-
-    public void transfer(UUID id, UUID to_id, double value) throws InsufficientResourcesException, AccountNotFoundException {
-
-        if(value <= 0){
-            throw new IllegalArgumentException("Valor inválido");
-        }
-        if(value > accounts.get(id).getBalance()){
-            throw new InsufficientResourcesException("Saldo insuficiente");
-        }
-        if(id.equals(to_id)){
-            throw new IllegalArgumentException("Você não pode transferir para a mesma conta");
-        }
-
-        Account from = accounts.get(id);
-        Account to = accounts.get(to_id);
-
-        if(from == null || to == null){
-            throw new AccountNotFoundException("Uma das contas não existe");
-        }
-
-        from.withdraw(id, value);
-        to.deposit(to_id, value);
-
-    }
 
     @Override
     public Account create(Account account) {

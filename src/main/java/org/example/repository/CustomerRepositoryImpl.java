@@ -33,6 +33,19 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
+    public Customer find(UUID id) throws AccountNotFoundException {
+
+        Customer existCustomer = customers.get(id);
+
+        if(existCustomer == null) {
+            throw new AccountNotFoundException();
+        }
+
+        return existCustomer;
+
+    }
+
+    @Override
     public UUID login(Customer customer) throws AccountNotFoundException, LoginException{
 
         Customer existCustomer = this.findByEmail(customer.getEmail());

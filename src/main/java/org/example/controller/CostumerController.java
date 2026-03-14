@@ -1,7 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Customer;
-import org.example.service.Costumer.CustomerService;
+import org.example.service.CustomerService;
 
 import java.util.Scanner;
 import java.util.UUID;
@@ -9,18 +9,23 @@ import java.util.UUID;
 public class CostumerController {
 
     private final CustomerService service;
+    private final Scanner sc;
 
-    public CostumerController(CustomerService customerService) {
-        this.service = customerService;
+    public CostumerController(CustomerService service, Scanner sc) {
+        this.service = service;
+        this.sc = sc;
     }
 
     public UUID showMenuRegister(){
 
-        Scanner sc = new Scanner(System.in);
         System.out.println("Insira o seu nome");
         String name = sc.nextLine();
         System.out.println("Insira seu email");
         String email = sc.nextLine();
+        while (!email.contains("@gmail.com")){
+            System.out.println("Entrada inválida. Digite um email válido (Ex: joao@gmail.com)");
+            email = sc.nextLine();
+        }
         System.out.println("Insira sua senha");
         String password = sc.nextLine();
         System.out.println("Insira seu CPF");
@@ -34,9 +39,12 @@ public class CostumerController {
 
     public UUID showMenuLogin(){
 
-        Scanner sc = new Scanner(System.in);
         System.out.println("Insira seu email");
         String email = sc.nextLine();
+        while (!email.contains("@gmail.com")){
+            System.out.println("Entrada inválida. Digite um email válido (Ex: joao@gmail.com)");
+            email = sc.nextLine();
+        }
         System.out.println("Insira sua senha");
         String password = sc.nextLine();
 
@@ -64,6 +72,19 @@ public class CostumerController {
         try {
 
             return service.login(customer);
+
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+
+    }
+
+    public Customer find(UUID id){
+
+        try {
+
+            return service.findById(id);
 
         } catch (Exception e){
             System.out.println(e.getMessage());

@@ -1,10 +1,9 @@
-package org.example.service.Account;
+package org.example.service;
 
 import org.example.model.Account;
 import org.example.model.Transaction;
 import org.example.repository.AccountRepositoryImpl;
 
-import javax.naming.InsufficientResourcesException;
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Stack;
@@ -35,24 +34,6 @@ public class AccountService {
     public List<UUID> login(UUID id_customer) throws AccountNotFoundException{
 
         return repository.login(id_customer);
-
-    }
-
-    public void deposit(UUID account_id, double value) throws AccountNotFoundException{
-
-        repository.deposit(account_id, value);
-
-    }
-
-    public void withdraw(UUID account_id, double value) throws InsufficientResourcesException, AccountNotFoundException{
-
-        repository.withdraw(account_id, value);
-
-    }
-
-    public void transfer(UUID account_id, UUID to_account_id, double value) throws InsufficientResourcesException, AccountNotFoundException {
-
-        repository.transfer(account_id, to_account_id, value);
 
     }
 

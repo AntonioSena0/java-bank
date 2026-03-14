@@ -1,14 +1,16 @@
-package org.example.app;
+package org.example;
 
 import org.example.controller.AccountController;
 import org.example.controller.CostumerController;
 import org.example.controller.TransactionController;
+import org.example.enums.UserType;
+import org.example.model.Customer;
 import org.example.repository.AccountRepositoryImpl;
 import org.example.repository.CustomerRepositoryImpl;
 import org.example.repository.TransactionRepositoryImpl;
-import org.example.service.Account.AccountService;
-import org.example.service.Costumer.CustomerService;
-import org.example.service.Transaction.TransactionService;
+import org.example.service.AccountService;
+import org.example.service.CustomerService;
+import org.example.service.TransactionService;
 
 import java.util.Scanner;
 import java.util.UUID;
@@ -32,17 +34,18 @@ public class app {
         Scanner sc = new Scanner(System.in);
 
         AccountRepositoryImpl accountsRepo = new AccountRepositoryImpl();
-        TransactionRepositoryImpl transRepo = new TransactionRepositoryImpl();
+        TransactionRepositoryImpl transRepo = new TransactionRepositoryImpl(accountsRepo);
         CustomerRepositoryImpl customerRepo = new CustomerRepositoryImpl();
 
         AccountService accountService = new AccountService(accountsRepo);
         TransactionService transService = new TransactionService(transRepo);
         CustomerService customerService = new CustomerService(customerRepo);
 
-        AccountController accountCtrl = new AccountController(accountService, sc);
-        TransactionController transCtrl = new TransactionController(transService);
-        CostumerController customerCtrl = new CostumerController(customerService);
+        AccountController accountCtrl = new AccountController(accountService, transService, sc);
+        TransactionController transCtrl = new TransactionController(transService, accountService, sc);
+        CostumerController customerCtrl = new CostumerController(customerService, sc);
 
+        customerCtrl.create(new Customer("admin@system.com", "admin123456", UserType.ADMIN));
         app application = new app(accountCtrl, customerCtrl, transCtrl, sc);
         application.run();
     }
@@ -90,6 +93,11 @@ public class app {
                             System.out.println("Opção inválida!");
                             break;
                     }
+
+                } else if(currentCustomerId != null && costumerController.find(currentCustomerId).getRole().equals(UserType.ADMIN)){
+
+                    transactionController.showMenu(currentCustomerId);
+                    currentCustomerId = null;
 
                 } else {
 
