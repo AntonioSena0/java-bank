@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.dto.CustomerLoginRequest;
 import org.example.model.Customer;
 import org.example.service.CustomerService;
 
@@ -16,7 +17,7 @@ public class CostumerController {
         this.sc = sc;
     }
 
-    public UUID showMenuRegister(){
+    public Long showMenuRegister(){
 
         System.out.println("Insira o seu nome");
         String name = sc.nextLine();
@@ -37,7 +38,7 @@ public class CostumerController {
 
     }
 
-    public UUID showMenuLogin(){
+    public Long showMenuLogin(){
 
         System.out.println("Insira seu email");
         String email = sc.nextLine();
@@ -48,7 +49,7 @@ public class CostumerController {
         System.out.println("Insira sua senha");
         String password = sc.nextLine();
 
-        return this.login(new Customer(email, password));
+        return this.login(new CustomerLoginRequest(email, password));
 
     }
 
@@ -67,11 +68,11 @@ public class CostumerController {
 
     }
 
-    public UUID login(Customer customer){
+    public Long login(CustomerLoginRequest request){
 
         try {
 
-            return service.login(customer);
+            return service.login(request);
 
         } catch (Exception e){
             System.out.println(e.getMessage());
@@ -80,7 +81,7 @@ public class CostumerController {
 
     }
 
-    public Customer find(UUID id){
+    public Customer find(Long id){
 
         try {
 
