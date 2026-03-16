@@ -1,35 +1,56 @@
 package org.example.model;
 
+import jakarta.persistence.*;
 import org.example.enums.TransactionType;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Entity
+@Table(name = "transactions")
 public class Transaction {
 
-    private UUID id = UUID.randomUUID();
-    private TransactionType type;
-    private double amount;
-    private LocalDate date;
-    private UUID id_account;
-    private UUID to_account;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public Transaction(TransactionType type, double amount, LocalDate date, UUID id_account) {
-        this.type = type;
-        this.amount = amount;
-        this.date = date;
-        this.id_account = id_account;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    @Column(nullable = false)
+    private double amount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_account", nullable = false)
+    private Account from_account;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "to_account_id", nullable = true)
+    private Account to_account;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDate createdAt;
+
+    public Transaction() {
     }
 
-    public Transaction(TransactionType type, double amount, LocalDate date, UUID id_account, UUID to_account) {
+    public Transaction(TransactionType type, double amount, Account from_account) {
         this.type = type;
         this.amount = amount;
-        this.date = date;
-        this.id_account = id_account;
+        this.from_account = from_account;
+    }
+
+    public Transaction(TransactionType type, double amount, Account from_account, Account to_account) {
+        this.type = type;
+        this.amount = amount;
+        this.from_account = from_account;
         this.to_account = to_account;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -41,19 +62,19 @@ public class Transaction {
         return amount;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getCreatedAt() {
+        return createdAt;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public UUID getId_account() {
-        return id_account;
+    public Account getFrom_account() {
+        return from_account;
     }
 
-    public UUID getTo_account() {
+    public Account getTo_account() {
         return to_account;
     }
 }

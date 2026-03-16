@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import org.example.dto.AccountResponse;
+import org.example.dto.TransactionResponse;
 import org.example.model.Account;
 import org.example.model.Transaction;
 import org.example.service.AccountService;
@@ -22,7 +24,7 @@ public class TransactionController {
         this.sc = sc;
     }
 
-    public void showMenu(UUID id){
+    public void showMenu(Long id){
 
         while(true) {
 
@@ -56,29 +58,26 @@ public class TransactionController {
                     try {
                         System.out.println("Qual o id da transação");
                         String id_transaction = sc.nextLine();
-                        UUID transaction_id = UUID.fromString(id_transaction);
-                        while (this.listTransaction(transaction_id) == null){
-                            System.out.println("Entrada inválida. Digite uma chave válida");
-                            System.out.print("Chave: ");
-                            id_transaction = sc.nextLine();
-                            transaction_id = UUID.fromString(id_transaction);
+                        Long transaction_id = Long.parseLong(id_transaction);
+                        TransactionResponse transaction = listTransaction(transaction_id);
+                        if(transaction == null){
+                            break;
                         }
-                        Transaction transaction = listTransaction(transaction_id);
                         System.out.println();
                         System.out.println("==== Transação Encontrada ====");
                         System.out.print("Id da transação: ");
-                        System.out.println(transaction.getId());
+                        System.out.println(transaction.id());
                         System.out.print("Tipo: ");
-                        System.out.println(transaction.getType());
+                        System.out.println(transaction.type());
                         System.out.print("Quantidade: ");
-                        System.out.println(transaction.getAmount());
+                        System.out.println(transaction.amount());
                         System.out.print("Data: ");
-                        System.out.println(transaction.getDate());
+                        System.out.println(transaction.createdAt());
                         System.out.print("Chave da conta que enviou: ");
-                        System.out.println(transaction.getId_account());
-                        if(transaction.getTo_account() != null) {
+                        System.out.println(transaction.from_account().id());
+                        if(transaction.to_account() != null) {
                             System.out.print("Chave da conta que recebeu: ");
-                            System.out.println(transaction.getTo_account());
+                            System.out.println(transaction.to_account().id());
                         }
                         System.out.println("===============================");
                         break;
@@ -91,28 +90,28 @@ public class TransactionController {
 
                         System.out.println("Qual o id da conta");
                         String id_account = sc.nextLine();
-                        UUID account_id = UUID.fromString(id_account);
+                        Long account_id = Long.parseLong(id_account);
                         while (this.findAccount(account_id) == null){
                             System.out.println("Entrada inválida. Digite uma chave válida");
                             System.out.print("Chave: ");
                             id_account = sc.nextLine();
-                            account_id = UUID.fromString(id_account);
+                            account_id = Long.parseLong(id_account);
                         }
 
-                        Account account = this.findAccount(account_id);
+                        AccountResponse account = this.findAccount(account_id);
 
                         System.out.println();
                         System.out.println("==== Conta Encontrada ====");
                         System.out.print("Dono da conta: ");
-                        System.out.println(account.getId_costumer());
+                        System.out.println(account.customer().id());
                         System.out.print("Id da conta: ");
-                        System.out.println(account.getId());
+                        System.out.println(account.id());
                         System.out.print("Saldo: ");
-                        System.out.println(account.getBalance());
+                        System.out.println(account.balance());
                         System.out.print("Tipo da conta: ");
-                        System.out.println(account.getAccountType());
-                        System.out.print("Transações feitas até agora: ");
-                        this.viewHistory(account.getId());
+                        System.out.println(account.type());
+                        System.out.println("Transações feitas até agora: ");
+                        this.viewHistory(account.id());
                         System.out.println("==========================");
 
                         break;
@@ -137,27 +136,27 @@ public class TransactionController {
 
     public void listAllTransactions(){
 
-        List<Transaction> transactions = service.findAll();
+        List<TransactionResponse> transactions = service.findAll();
 
         System.out.println("==== Transações Realizadas ====");
         for(int i = 0; i < transactions.size(); i++){
             System.out.print("Id da transação: ");
-            System.out.println(transactions.get(i).getId());
+            System.out.println(transactions.get(i).id());
             System.out.print("Tipo: ");
-            System.out.println(transactions.get(i).getType());
+            System.out.println(transactions.get(i).type());
             System.out.print("Quantidade: ");
-            System.out.println(transactions.get(i).getAmount());
+            System.out.println(transactions.get(i).amount());
             System.out.print("Data: ");
-            System.out.println(transactions.get(i).getDate());
+            System.out.println(transactions.get(i).createdAt());
             System.out.println("===============================");
         }
 
     }
 
-    public Transaction listTransaction(UUID id){
+    public TransactionResponse listTransaction(Long id){
 
         try {
-            Transaction transaction = service.findTransaction(id);
+            TransactionResponse transaction = service.findTransaction(id);
 
             return transaction;
 
@@ -169,13 +168,11 @@ public class TransactionController {
 
     }
 
-    public Account findAccount(UUID id){
+    public AccountResponse findAccount(Long id){
 
         try {
 
-            Account account = accountService.find(id);
-
-            return account;
+            return accountService.find(id);
 
         } catch (Exception e){
             System.out.println(e.getMessage());
@@ -186,28 +183,26 @@ public class TransactionController {
     }
 
 
-    public void viewHistory(UUID id){
+    public void viewHistory(Long id){
 
         try {
 
-            Stack<Transaction> transactions = accountService.listTransactions(id);
+            List<TransactionResponse> transactions = service.listTransactionsByAccountId(id);
 
             if (transactions.isEmpty()) {
                 System.out.println("Nenhuma transação encontrada.");
                 return;
             }
 
-            Stack<Transaction> copy = (Stack<Transaction>) transactions.clone();
-
-            System.out.println();
             System.out.println("==== Histórico ====");
-            while(!copy.isEmpty()){
-                Transaction t = copy.pop();
-                System.out.println(t.getType());
-                System.out.println(t.getAmount());
-                System.out.println(t.getDate());
+            transactions.forEach(transaction -> {
+
+                System.out.println(transaction.type());
+                System.out.println(transaction.amount());
+                System.out.println(transaction.createdAt());
                 System.out.println("===================");
-            }
+
+            });
 
         } catch (Exception e){
 

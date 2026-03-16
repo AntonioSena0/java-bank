@@ -1,116 +1,165 @@
 package org.example.repository;
 
+import org.example.dto.TransactionResponse;
 import org.example.enums.TransactionType;
+import org.example.mapper.TransactionMapper;
 import org.example.model.Account;
 import org.example.model.Transaction;
+import org.example.util.HibernateUtil;
+import org.hibernate.Session;
 
 import javax.naming.InsufficientResourcesException;
 import javax.security.auth.login.AccountNotFoundException;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class TransactionRepositoryImpl implements TransactionRepository{
 
-    HashMap<UUID, Transaction> transactions = new HashMap<>();
-    private final AccountRepositoryImpl repository;
-
-    public TransactionRepositoryImpl(AccountRepositoryImpl repository) {
-        this.repository = repository;
-    }
-
     @Override
-    public void deposit(UUID id, double value) throws AccountNotFoundException{
+    public void deposit(Long id, double value) throws AccountNotFoundException{
 
-        Account account = repository.find(id);
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-        if(account == null){
-            throw new AccountNotFoundException("Conta não existente");
+            Account account = session.find(Account.class, id);
+
+            if (account == null) {
+                throw new AccountNotFoundException("Conta não encontrada: " + id);
+            }
+            if (value <= 0) {
+                throw new IllegalArgumentException("Valor inválido: " + value);
+            }
+
+            session.beginTransaction();
+            account.deposit(value, TransactionType.DEPOSIT);
+            Transaction transaction = new Transaction(TransactionType.DEPOSIT, value, account);
+            session.persist(transaction);
+            session.getTransaction().commit();
+
         }
-
-        Transaction transaction = new Transaction(TransactionType.DEPOSIT, value, LocalDate.now(), id);
-        transactions.put(transaction.getId(), transaction);
-
-        account.deposit(account.getId(), value, TransactionType.DEPOSIT);
-
-    }
-
-    @Override
-    public void withdraw(UUID id, double value) throws InsufficientResourcesException, AccountNotFoundException{
-
-        Account account = repository.find(id);
-
-        if(account == null){
-            throw new AccountNotFoundException("Conta não existente");
-        }
-
-        if(value > account.getBalance()) {
-            throw new InsufficientResourcesException("Saldo insuficiente");
-        }
-
-        Transaction transaction = new Transaction(TransactionType.WITHDRAW, value, LocalDate.now(), id);
-        transactions.put(transaction.getId(), transaction);
-
-        account.withdraw(id, value, TransactionType.WITHDRAW);
 
     }
 
     @Override
-    public void transfer(UUID id, UUID to_id, double value) throws InsufficientResourcesException, AccountNotFoundException {
+    public void withdraw(Long id, double value) throws InsufficientResourcesException, AccountNotFoundException{
 
-        if(value <= 0){
-            throw new IllegalArgumentException("Valor inválido");
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            Account account = session.find(Account.class, id);
+
+            if (account == null) {
+                throw new AccountNotFoundException("Conta não encontrada: " + id);
+            }
+            if (value <= 0) {
+                throw new IllegalArgumentException("Valor inválido: " + value);
+            }
+
+            if(value > account.getBalance()){
+                throw new InsufficientResourcesException();
+            }
+
+            session.beginTransaction();
+            account.withdraw(   value, TransactionType.WITHDRAW);
+            Transaction transaction = new Transaction(TransactionType.WITHDRAW, value, account);
+            session.persist(transaction);
+            session.getTransaction().commit();
+
         }
-        if(value > repository.find(id).getBalance()){
-            throw new InsufficientResourcesException("Saldo insuficiente");
-        }
-        if(id.equals(to_id)){
-            throw new IllegalArgumentException("Você não pode transferir para a mesma conta");
-        }
-
-        Account from = repository.find(id);
-        Account to = repository.find(to_id);
-
-        if(from == null || to == null){
-            throw new AccountNotFoundException("Uma das contas não existe");
-        }
-
-        Transaction transaction = new Transaction(TransactionType.TRANSFER, value, LocalDate.now(), id, to_id);
-        transactions.put(transaction.getId(), transaction);
-
-        from.withdraw(id, value, TransactionType.TRANSFER);
-        to.deposit(to_id, value, TransactionType.TRANSFER);
 
     }
 
     @Override
-    public Transaction findTransaction(UUID id) throws ClassNotFoundException {
+    public void transfer(Long id, Long to_id, double value) throws InsufficientResourcesException, AccountNotFoundException {
 
-        Transaction transaction = transactions.get(id);
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-        if(transaction == null){
-            throw new ClassNotFoundException();
+            Account from_account = session.find(Account.class, id);
+            Account to_account = session.find(Account.class, to_id);
+
+            if (from_account == null) throw new AccountNotFoundException("Conta origem não encontrada");
+            if (to_account == null) throw new AccountNotFoundException("Conta destino não encontrada");
+
+            if(value <= 0){
+                throw new IllegalArgumentException("Valor inválido");
+            }
+            if(value > from_account.getBalance()){
+                throw new InsufficientResourcesException("Saldo insuficiente");
+            }
+            if(from_account.equals(to_account)){
+                throw new IllegalArgumentException("Você não pode transferir para a mesma conta");
+            }
+
+            session.beginTransaction();
+            from_account.withdraw(value, TransactionType.TRANSFER);
+            to_account.deposit(value, TransactionType.TRANSFER);
+            Transaction transaction = new Transaction(TransactionType.TRANSFER, value, from_account, to_account);
+            session.persist(transaction);
+            session.getTransaction().commit();
+
         }
-
-        return transaction;
 
     }
 
     @Override
-    public List<Transaction> findAll() {
+    public TransactionResponse findTransaction(Long id) throws ClassNotFoundException {
 
-        List<Transaction> transactionsList = new ArrayList<>();
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
-        if(transactions.isEmpty()){
-            throw new RuntimeException("Não foram feitas transações ainda");
+            Transaction transaction = session.find(Transaction.class, id);
+
+            if(transaction == null){
+                throw new ClassNotFoundException();
+            }
+
+            TransactionMapper mapper = new TransactionMapper();
+
+            return mapper.toTransactionResponse(transaction);
+
         }
 
-        transactions.forEach((uuid, transaction) -> {
-            transactionsList.add(transaction);
-        });
-
-        return transactionsList;
     }
+
+    @Override
+    public List<TransactionResponse> findAll() {
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            List<Transaction> txs = session.createQuery(
+                    "FROM Transaction", Transaction.class
+            )
+                    .getResultList();
+
+            TransactionMapper mapper = new TransactionMapper();
+            List<TransactionResponse> responses = new ArrayList<>();
+            txs.forEach(t -> responses.add(mapper.toTransactionResponse(t)));
+
+            return responses;
+
+        }
+
+    }
+
+
+    @Override
+    public List<TransactionResponse> listTransactionsByAccountId(Long id) {
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            List<Transaction> txs = session.createQuery("""
+            SELECT t FROM Transaction t
+            JOIN FETCH t.from_account fa
+            LEFT JOIN FETCH t.to_account ta
+            WHERE fa.id = :accountId OR ta.id = :accountId
+            ORDER BY t.createdAt DESC
+            """, Transaction.class)
+                    .setParameter("accountId", id)
+                    .getResultList();
+
+            TransactionMapper mapper = new TransactionMapper();
+            List<TransactionResponse> responses = new ArrayList<>();
+            txs.forEach(t -> responses.add(mapper.toTransactionResponse(t)));
+
+            return responses;
+        }
+
+    }
+
 }

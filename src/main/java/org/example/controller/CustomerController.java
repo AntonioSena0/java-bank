@@ -1,18 +1,20 @@
 package org.example.controller;
 
 import org.example.dto.CustomerLoginRequest;
+import org.example.dto.CustomerRequest;
+import org.example.dto.CustomerResponse;
+import org.example.enums.UserType;
 import org.example.model.Customer;
 import org.example.service.CustomerService;
 
 import java.util.Scanner;
-import java.util.UUID;
 
-public class CostumerController {
+public class CustomerController {
 
     private final CustomerService service;
     private final Scanner sc;
 
-    public CostumerController(CustomerService service, Scanner sc) {
+    public CustomerController(CustomerService service, Scanner sc) {
         this.service = service;
         this.sc = sc;
     }
@@ -31,10 +33,12 @@ public class CostumerController {
         String password = sc.nextLine();
         System.out.println("Insira seu CPF");
         String document = sc.nextLine();
+        System.out.println("Insira seu telefone");
+        String phone = sc.nextLine();
 
-        Customer newCustomer = this.create(new Customer(name, email, password, document));
+        CustomerResponse newCustomer = this.create(new CustomerRequest(name, email, password, phone, document, UserType.CLIENT));
 
-        return newCustomer.getId();
+        return newCustomer.id();
 
     }
 
@@ -53,11 +57,11 @@ public class CostumerController {
 
     }
 
-    public Customer create(Customer costumer){
+    public CustomerResponse create(CustomerRequest request){
 
         try {
 
-            return service.create(costumer);
+            return service.create(request);
 
         } catch (Exception e){
 
@@ -81,7 +85,7 @@ public class CostumerController {
 
     }
 
-    public Customer find(Long id){
+    public CustomerResponse find(Long id){
 
         try {
 
@@ -92,6 +96,27 @@ public class CostumerController {
             return null;
         }
 
+    }
+
+    public void createAdminIfNotExists() {
+        try {
+
+            Customer existing = service.findByEmail("admin@gmail.com");
+            if (existing != null) {
+                return;
+            }
+
+            service.create(new CustomerRequest(
+                    "Admin",
+                    "admin@gmail.com",
+                    "admin123456",
+                    "000.000.000-00",
+                    "(11) 12345-1234",
+                    UserType.ADMIN
+            ));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 }

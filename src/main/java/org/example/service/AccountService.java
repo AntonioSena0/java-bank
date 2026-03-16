@@ -1,51 +1,66 @@
 package org.example.service;
 
+import org.example.dto.AccountIdResponse;
+import org.example.mapper.AccountMapper;
+import org.example.dto.AccountRequest;
+import org.example.dto.AccountResponse;
+import org.example.mapper.CustomerMapper;
+import org.example.mapper.PixKeyMapper;
 import org.example.model.Account;
-import org.example.model.Transaction;
 import org.example.repository.AccountRepositoryImpl;
+import org.example.repository.CustomerRepositoryImpl;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
-import java.util.UUID;
 
 public class AccountService {
 
     private final AccountRepositoryImpl repository;
+    private final AccountMapper mapper;
+    private final CustomerRepositoryImpl customerRepository;
 
-    public AccountService(AccountRepositoryImpl accountRepository) {
-        this.repository = accountRepository;
+    public AccountService(AccountRepositoryImpl repository, AccountMapper mapper, CustomerRepositoryImpl customerRepository) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.customerRepository = customerRepository;
     }
 
-    public Account create(Account account) {
+    public AccountResponse create(AccountRequest request) throws AccountNotFoundException{
 
-        return repository.create(account);
+        Account account = new Account(request.balance(), request.type(), customerRepository.find(request.customer_id()));
+
+        return mapper.toAccountResponse(repository.create(account));
 
     }
 
-    public Account find(UUID id) throws AccountNotFoundException{
+    public AccountResponse find(Long id) throws AccountNotFoundException{
+
         return repository.find(id);
+
     }
 
-    public List<Account> findByCustomerId(UUID id) throws AccountNotFoundException{
-        return repository.findByIdCustomer(id);
+    public List<AccountResponse> findByCustomerId(Long id) throws AccountNotFoundException{
+
+        List<AccountResponse> accounts = new ArrayList<>();
+
+        repository.findByIdCustomer(id).forEach(account -> {
+            accounts.add(mapper.toAccountResponse(account));
+        });
+
+        return accounts;
+
     }
 
-    public List<UUID> login(UUID id_customer) throws AccountNotFoundException{
+    public List<Long> login(Long id_customer) throws AccountNotFoundException{
 
         return repository.login(id_customer);
 
     }
 
-    public void delete(UUID id) throws AccountNotFoundException{
+    public AccountIdResponse findByPixKey(String key) throws AccountNotFoundException{
 
-        repository.delete(id);
-
-    }
-
-    public Stack<Transaction> listTransactions(UUID id){
-
-        return repository.listTransactions(id);
+        return mapper.toAccountIdResponse(repository.findByPixKey(key));
 
     }
 

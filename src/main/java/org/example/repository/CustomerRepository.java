@@ -1,16 +1,18 @@
 package org.example.repository;
 
+import org.example.dto.CustomerLoginRequest;
+import org.example.dto.CustomerRequest;
+import org.example.dto.CustomerResponse;
 import org.example.model.Customer;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.LoginException;
-import java.util.UUID;
 
 public interface CustomerRepository {
 
-    Customer create(Customer customer);
+    Customer create(Customer request);
     Customer findByEmail(String email) throws AccountNotFoundException;
-    Customer find(UUID id) throws AccountNotFoundException;
-    UUID login(Customer customer) throws AccountNotFoundException, LoginException;
+    Customer find(Long id) throws AccountNotFoundException;
+    Long login(CustomerLoginRequest request) throws AccountNotFoundException, LoginException;
 
 }

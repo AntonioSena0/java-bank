@@ -1,101 +1,134 @@
 package org.example.repository;
 
-import org.example.enums.TransactionType;
+import org.example.dto.AccountIdResponse;
+import org.example.dto.AccountResponse;
+import org.example.mapper.AccountMapper;
+import org.example.mapper.CustomerMapper;
 import org.example.model.Account;
-import org.example.model.Transaction;
+import org.example.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
-import javax.naming.InsufficientResourcesException;
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.*;
 
 public class AccountRepositoryImpl implements AccountRepository{
 
-    private final HashMap<UUID, Account> accounts = new HashMap<>();
-    private final HashMap<UUID, List<Account>> accountsLogin = new HashMap<>();
-
     @Override
-    public Account create(Account account) {
+    public Account create(Account request) {
 
-        if(account.getBalance() < 0){
-            System.out.println("Seu saldo não pode ser negativo");
-            return null;
+        Session session = null;
+        Transaction tx = null;
+
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            tx = session.beginTransaction();
+            session.persist(request);
+            tx.commit();
+            return request;
+
+        } catch (Exception e){
+            if(tx != null && tx.isActive()){
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro interno ao criar a conta");
+        } finally {
+            if(session != null && session.isOpen()){
+                session.close();
+            }
         }
-
-        Account newAccount = new Account(account.getBalance(), account.getAccountType(), account.getId_costumer());
-
-        accounts.put(newAccount.getId(), newAccount);
-        accountsLogin.computeIfAbsent(newAccount.getId_costumer(), k -> new ArrayList<>()).add(newAccount);
-
-        return newAccount;
 
     }
 
     @Override
-    public Account find(UUID key) throws AccountNotFoundException {
+    public AccountResponse find(Long key) throws AccountNotFoundException {
 
-        if (accounts.get(key) == null) {
-            throw new AccountNotFoundException();
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            Account account = session.get(Account.class, key);
+
+            if(account == null) throw new AccountNotFoundException("Credenciais inválidas");
+
+            AccountMapper mapper = new AccountMapper(new CustomerMapper());
+
+            return mapper.toAccountResponse(account);
+
         }
-
-        return accounts.get(key);
 
     }
 
     @Override
-    public List<Account> findByIdCustomer(UUID key) throws AccountNotFoundException {
+    public List<Account> findByIdCustomer(Long key) throws AccountNotFoundException {
 
-        List<Account> list = accountsLogin.get(key);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-        if (list == null || list.isEmpty()) {
-            throw new AccountNotFoundException("Você ainda não tem contas");
+            return session.createQuery("""
+                SELECT a FROM Account a
+                JOIN FETCH a.customer c
+                LEFT JOIN FETCH a.pixKey pk
+                WHERE c.id = :customerId
+                ORDER BY a.id ASC
+                """, Account.class)
+                    .setParameter("customerId", key)
+                    .getResultList();
+
         }
-
-        return list;
 
     }
 
 
     @Override
-    public List<UUID> login(UUID customer_id) throws AccountNotFoundException {
+    public List<Long> login(Long customer_id) throws AccountNotFoundException {
 
-        List<Account> existAccount = findByIdCustomer(customer_id);
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
-        if(existAccount.isEmpty()){
-            throw new AccountNotFoundException("Você ainda não tem contas, cadastre uma");
+            List<Long> accountIds = session.createQuery(
+                    "SELECT a.id FROM Account a WHERE a.customer.id = :customerId ORDER BY a.id ASC", Long.class
+            )
+                    .setParameter("customerId", customer_id)
+                    .getResultList();
+
+            if(accountIds.isEmpty())  throw new AccountNotFoundException("Ainda não possui contas");
+
+            return accountIds;
+
         }
-
-        List<UUID> accounts = new ArrayList<>();
-        existAccount.forEach(account -> {
-            accounts.add(account.getId());
-        });
-
-        return accounts;
 
     }
 
+    @Override
     public List<Account> findAll() {
 
-        return new ArrayList<>(accounts.values());
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
+            return session.createQuery(
+                    "FROM Account", Account.class
+            ).getResultList();
+
+        }
     }
 
     @Override
-    public void delete(UUID id) throws AccountNotFoundException {
+    public Account findByPixKey(String key) throws AccountNotFoundException {
 
-        Account existingAccounnt = this.find(id);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Account account = session.createQuery("""
+            SELECT a
+            FROM Account a
+            JOIN a.pixKey pk
+            WHERE pk.keyValue = :key
+            """, Account.class)
+                    .setParameter("key", key)
+                    .uniqueResult();
 
-        if(existingAccounnt == null){
-            throw new AccountNotFoundException("Conta inexistente");
+            if (account == null) {
+                throw new AccountNotFoundException("Conta não encontrada para a chave pix");
+            }
+
+            return account;
         }
 
-        accounts.remove(id);
-
     }
 
-    @Override
-    public Stack<Transaction> listTransactions(UUID id) {
-
-        return accounts.get(id).getTransactionList();
-
-    }
 }

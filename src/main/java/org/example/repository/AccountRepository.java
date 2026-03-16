@@ -1,21 +1,20 @@
 package org.example.repository;
 
+import org.example.dto.AccountIdResponse;
+import org.example.dto.AccountRequest;
+import org.example.dto.AccountResponse;
 import org.example.model.Account;
-import org.example.model.Transaction;
 
-import javax.naming.InsufficientResourcesException;
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
-import java.util.Stack;
-import java.util.UUID;
 
 public interface AccountRepository {
 
-    Account create(Account account);
-    List<UUID> login(UUID customer_id) throws AccountNotFoundException;
-    Account find(UUID key) throws AccountNotFoundException;
-    List<Account> findByIdCustomer(UUID key) throws AccountNotFoundException;
-    void delete(UUID id) throws AccountNotFoundException;
-    Stack<Transaction> listTransactions(UUID id);
+    Account create(Account request);
+    List<Long> login(Long customer_id) throws AccountNotFoundException;
+    AccountResponse find(Long key) throws AccountNotFoundException;
+    List<Account> findAll();
+    List<Account> findByIdCustomer(Long key) throws AccountNotFoundException;
+    Account findByPixKey(String key) throws  AccountNotFoundException;
 
 }

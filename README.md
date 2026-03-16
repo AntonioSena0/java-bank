@@ -12,48 +12,55 @@ Um sistema bancário simples feito em Java 17, desenvolvido com foco em estudos 
 ### Tecnologias utilizadas
 
 - **Linguagem:** Java 17
+- **ORM** Hibernate
+- **Database** PostgreSQL
 - **Build:** Maven (`pom.xml`)
 
 ### Estrutura do projeto
 
 A estrutura de pacotes principal fica em `src/main/java/org/example`
 
-- `app`: classes de inicialização da aplicação (ponto de entrada, setup inicial).
 - `controller`: orquestra chamadas entre camada de serviço e camada de modelo.
+- `dto`: records responsáveis pelo cuidado com os dados evitando vazamentos desnecessários
 - `enums`: tipos enumerados (por exemplo, tipos de conta, tipos de transação).
+- `mapper`: mappers responsáveis pelo mapeamento dos dados evitando vazamentos e aumentando funcionalidade geral
 - `model`: entidades de domínio do sistema bancário (contas, clientes, transações etc.).
 - `repository`: classes responsáveis por armazenar e recuperar dados em memória (simulando um repositório).
 - `service`: regras de negócio, validações e operações como saque, depósito e transferência.
+- `util`: classe utilizada para inicialização e definição do hibernate
+- `app`: classe de inicialização da aplicação (ponto de entrada, setup inicial).
 
-### Funcionalidades (primeira versão)
+### Funcionalidades (segunda versão)
 
 - Criação e gerenciamento de contas bancárias.
 - Operações de depósito, saque e transferência com regras básicas de validação.
 - Visão de administrador com controle de transações e contas.
+- Toda a aplicação containerizada e rodando via docker-compose.
+- Utilização de Hibernate + PostgreSQL para banco de dados real.
 
 ### Como executar o projeto
 
-1. Certifique-se de ter o Java 17 instalado.
-2. Clone o repositório:
+1. Clone o repositório:
 
    ```bash
    git clone git@github.com:AntonioSena0/java-bank.git
    cd java-bank
    ```
    
-3. Compile e rode com Maven
+2. Inicie o container com o Docker
    ```bash
-   mvn clean compile
-   mvn exec:java
+   docker compose up -d
    ```
-    Se estiver utilizando uma IDE como IntelliJ, basta importar o projeto Maven e executar a classe principal em `org.example.app`.
+   
+3. Rode a aplicação através do arquivo app
+   ``` bash
+   mvn compile exec:java
+   ```
 
 ### Próximos passos e melhorias:
 
 #### Algumas ideias de evolução para as próximas versões:
-- Persistência em banco de dados (PostgreSQL).
 - Camada de API REST usando Spring Boot.
-- Dockerização da API.
 - Autenticação de usuários e segurança.
 - Testes unitários e de integração.
 - Tratamento mais robusto de erros e validações.

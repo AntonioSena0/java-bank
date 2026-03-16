@@ -1,62 +1,89 @@
 package org.example.repository;
 
+import org.example.dto.CustomerLoginRequest;
 import org.example.model.Customer;
+import org.example.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.LoginException;
-import java.util.HashMap;
-import java.util.UUID;
 
 public class CustomerRepositoryImpl implements CustomerRepository {
 
-    private final HashMap<UUID, Customer> customers = new HashMap<>();
-    private final HashMap<String, Customer> customersEmail = new HashMap<>();
-
     @Override
-    public Customer create(Customer customer) {
-        customers.put(customer.getId(), customer);
-        customersEmail.put(customer.getEmail(), customer);
-        return customer;
-    }
+    public Customer create(Customer request) {
 
-    @Override
-    public Customer findByEmail(String email) throws AccountNotFoundException {
+        Session session = null;
+        Transaction tx = null;
+        try{
+            session = HibernateUtil.getSessionFactory().openSession();
 
-        Customer existCustomer = customersEmail.get(email);
+            tx = session.beginTransaction();
+            session.persist(request);
+            tx.commit();
 
-        if(existCustomer == null){
-            throw new AccountNotFoundException("Cliente não encontrado");
+            return request;
+
+        } catch (Exception e){
+
+            if(tx != null && tx.isActive()){
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro interno ao criar cliente");
+        } finally {
+            if( session != null && session.isOpen()) session.close();
         }
-
-        return existCustomer;
-
-    }
-
-    @Override
-    public Customer find(UUID id) throws AccountNotFoundException {
-
-        Customer existCustomer = customers.get(id);
-
-        if(existCustomer == null) {
-            throw new AccountNotFoundException();
-        }
-
-        return existCustomer;
 
     }
 
     @Override
-    public UUID login(Customer customer) throws AccountNotFoundException, LoginException{
+    public Customer findByEmail(String email) {
 
-        Customer existCustomer = this.findByEmail(customer.getEmail());
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
-        if(customer.getPassword().equals(existCustomer.getPassword())){
+            Customer customer = session.createQuery(
+                    "FROM Customer WHERE email = :email", Customer.class
+            )
+                    .setParameter("email", email)
+                    .uniqueResult();
 
-            return existCustomer.getId();
+            return customer;
 
         }
 
-        throw new LoginException("Senha ou email inválidos");
+    }
+
+    @Override
+    public Customer find(Long id) throws AccountNotFoundException {
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            Customer existCustomer = session.find(Customer.class, id);
+
+            if(existCustomer == null) throw new AccountNotFoundException("Credenciais inválidas");
+
+            return existCustomer;
+
+        }
+
+    }
+
+    @Override
+    public Long login(CustomerLoginRequest request) throws LoginException{
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Customer customer = session.createQuery(
+                            "FROM Customer WHERE LOWER(email) = LOWER(:email)", Customer.class)
+                    .setParameter("email", request.email())
+                    .uniqueResult();
+
+            if (customer == null || !request.password().equals(customer.getPassword())) {
+                throw new LoginException("Credenciais inválidas");
+            }
+            return customer.getId();
+        }
 
     }
 
