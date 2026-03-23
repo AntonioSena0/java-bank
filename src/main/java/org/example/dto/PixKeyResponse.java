@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 public record PixKeyResponse (
 
+        Long id,
         String keyValue,
         PixKeyType type,
         LocalDate createdAt

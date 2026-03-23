@@ -21,8 +21,8 @@ public class PixKey {
     @Enumerated(EnumType.STRING)
     private PixKeyType type;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
     @CreationTimestamp

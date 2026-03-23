@@ -7,116 +7,104 @@ import org.example.enums.UserType;
 import org.example.model.Customer;
 import org.example.service.CustomerService;
 
-import java.util.Scanner;
+import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.LoginException;
 
 public class CustomerController {
 
     private final CustomerService service;
-    private final Scanner sc;
 
-    public CustomerController(CustomerService service, Scanner sc) {
+    public CustomerController(CustomerService service) {
         this.service = service;
-        this.sc = sc;
     }
 
-    public Long showMenuRegister(){
-
-        System.out.println("Insira o seu nome");
-        String name = sc.nextLine();
-        System.out.println("Insira seu email");
-        String email = sc.nextLine();
-        while (!email.contains("@gmail.com")){
-            System.out.println("Entrada inválida. Digite um email válido (Ex: joao@gmail.com)");
-            email = sc.nextLine();
-        }
-        System.out.println("Insira sua senha");
-        String password = sc.nextLine();
-        System.out.println("Insira seu CPF");
-        String document = sc.nextLine();
-        System.out.println("Insira seu telefone");
-        String phone = sc.nextLine();
-
-        CustomerResponse newCustomer = this.create(new CustomerRequest(name, email, password, phone, document, UserType.CLIENT));
-
-        return newCustomer.id();
-
-    }
-
-    public Long showMenuLogin(){
-
-        System.out.println("Insira seu email");
-        String email = sc.nextLine();
-        while (!email.contains("@gmail.com")){
-            System.out.println("Entrada inválida. Digite um email válido (Ex: joao@gmail.com)");
-            email = sc.nextLine();
-        }
-        System.out.println("Insira sua senha");
-        String password = sc.nextLine();
-
-        return this.login(new CustomerLoginRequest(email, password));
-
-    }
-
-    public CustomerResponse create(CustomerRequest request){
-
+    public CustomerResponse create(CustomerRequest request) {
         try {
 
             return service.create(request);
 
-        } catch (Exception e){
-
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erro ao criar cliente: " + e.getMessage());
             return null;
-
         }
-
     }
 
-    public Long login(CustomerLoginRequest request){
-
+    public Long login(CustomerLoginRequest request) {
         try {
-
             return service.login(request);
-
-        } catch (Exception e){
+        } catch (LoginException e) {
             System.out.println(e.getMessage());
             return null;
+        } catch (Exception e) {
+            System.out.println("Erro no login: " + e.getMessage());
+            return null;
         }
-
     }
 
-    public CustomerResponse find(Long id){
-
+    public CustomerResponse find(Long id) {
         try {
-
             return service.findById(id);
-
-        } catch (Exception e){
+        } catch (AccountNotFoundException e) {
             System.out.println(e.getMessage());
             return null;
+        } catch (Exception e) {
+            System.out.println("Erro ao buscar cliente: " + e.getMessage());
+            return null;
         }
+    }
 
+    public Customer findByEmail(String email) {
+        try {
+            return service.findByEmail(email);
+        } catch (Exception e) {
+            System.out.println("Erro ao buscar por email: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public CustomerResponse update(CustomerRequest request, Long id) {
+        try {
+            return service.update(request, id);
+        } catch (AccountNotFoundException e) {
+            System.out.println(e.getMessage());
+            return null;
+        } catch (Exception e) {
+            System.out.println("Erro ao atualizar cliente: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void delete(Long id) {
+        try {
+            service.delete(id);
+            System.out.println("Cliente deletado com sucesso.");
+        } catch (AccountNotFoundException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erro ao deletar cliente: " + e.getMessage());
+        }
     }
 
     public void createAdminIfNotExists() {
         try {
-
             Customer existing = service.findByEmail("admin@gmail.com");
             if (existing != null) {
                 return;
             }
 
-            service.create(new CustomerRequest(
+            CustomerRequest request = new CustomerRequest(
                     "Admin",
                     "admin@gmail.com",
                     "admin123456",
                     "000.000.000-00",
                     "(11) 12345-1234",
                     UserType.ADMIN
-            ));
+            );
+
+            service.create(request);
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Erro ao criar admin: " + e.getMessage());
         }
     }
-
 }

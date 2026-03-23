@@ -44,9 +44,7 @@ public class Transaction {
     }
 
     public Transaction(TransactionType type, double amount, Account from_account, Account to_account) {
-        this.type = type;
-        this.amount = amount;
-        this.from_account = from_account;
+        this(type, amount, from_account);
         this.to_account = to_account;
     }
 

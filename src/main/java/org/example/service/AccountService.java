@@ -1,11 +1,8 @@
 package org.example.service;
 
-import org.example.dto.AccountIdResponse;
-import org.example.mapper.AccountMapper;
 import org.example.dto.AccountRequest;
+import org.example.mapper.AccountMapper;
 import org.example.dto.AccountResponse;
-import org.example.mapper.CustomerMapper;
-import org.example.mapper.PixKeyMapper;
 import org.example.model.Account;
 import org.example.repository.AccountRepositoryImpl;
 import org.example.repository.CustomerRepositoryImpl;
@@ -34,6 +31,18 @@ public class AccountService {
 
     }
 
+    public List<AccountResponse> findAll() {
+
+        List<AccountResponse> accountResponses = new ArrayList<>();
+
+        repository.findAll().forEach(account -> {
+            accountResponses.add(mapper.toAccountResponse(account));
+        });
+
+        return accountResponses;
+
+    }
+
     public AccountResponse find(Long id) throws AccountNotFoundException{
 
         return repository.find(id);
@@ -58,9 +67,9 @@ public class AccountService {
 
     }
 
-    public AccountIdResponse findByPixKey(String key) throws AccountNotFoundException{
+    public void delete(Long id) throws AccountNotFoundException {
 
-        return mapper.toAccountIdResponse(repository.findByPixKey(key));
+        repository.delete(id);
 
     }
 

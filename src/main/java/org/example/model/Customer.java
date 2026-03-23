@@ -78,6 +78,26 @@ public class Customer {
         return phone;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setDocument(String document) {
+        this.document = document;
+    }
+
     public void setRole(UserType role) {
         this.role = role;
     }

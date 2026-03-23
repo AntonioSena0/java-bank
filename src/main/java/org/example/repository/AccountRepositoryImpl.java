@@ -66,7 +66,6 @@ public class AccountRepositoryImpl implements AccountRepository{
             return session.createQuery("""
                 SELECT a FROM Account a
                 JOIN FETCH a.customer c
-                LEFT JOIN FETCH a.pixKey pk
                 WHERE c.id = :customerId
                 ORDER BY a.id ASC
                 """, Account.class)
@@ -84,7 +83,7 @@ public class AccountRepositoryImpl implements AccountRepository{
         try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
             List<Long> accountIds = session.createQuery(
-                    "SELECT a.id FROM Account a WHERE a.customer.id = :customerId ORDER BY a.id ASC", Long.class
+                    "SELECT a.id FROM Account a JOIN FETCH a.customer WHERE a.customer.id = :customerId ORDER BY a.id ASC", Long.class
             )
                     .setParameter("customerId", customer_id)
                     .getResultList();
@@ -109,24 +108,23 @@ public class AccountRepositoryImpl implements AccountRepository{
         }
     }
 
-    @Override
-    public Account findByPixKey(String key) throws AccountNotFoundException {
+    public void delete(Long id) throws AccountNotFoundException{
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Account account = session.createQuery("""
-            SELECT a
-            FROM Account a
-            JOIN a.pixKey pk
-            WHERE pk.keyValue = :key
-            """, Account.class)
-                    .setParameter("key", key)
-                    .uniqueResult();
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
-            if (account == null) {
-                throw new AccountNotFoundException("Conta não encontrada para a chave pix");
+            session.beginTransaction();
+
+            Account existAccount = session.find(Account.class, id);
+
+            if(existAccount == null){
+                throw new AccountNotFoundException("Conta inexistente");
             }
 
-            return account;
+            session.remove(existAccount);
+
+            session.getTransaction().commit();
+            session.flush();
+
         }
 
     }

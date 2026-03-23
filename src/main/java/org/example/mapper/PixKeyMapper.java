@@ -10,6 +10,7 @@ public class PixKeyMapper {
         if (key == null) return null;
 
         return new PixKeyResponse(
+                key.getId(),
                 key.getKeyValue(),
                 key.getType(),
                 key.getCreatedAt()

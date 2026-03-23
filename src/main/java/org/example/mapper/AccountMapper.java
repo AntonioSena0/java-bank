@@ -18,19 +18,10 @@ public class AccountMapper {
         if (account == null) return null;
 
         PixKeyResponse pixResponse = null;
-        PixKey pixKey = account.getPixKey();
-        if (pixKey != null) {
-            pixResponse = new PixKeyResponse(
-                    pixKey.getKeyValue(),
-                    pixKey.getType(),
-                    pixKey.getCreatedAt()
-            );
-        }
 
         return new AccountResponse(
                 account.getId(),
                 customerMapper.toCustomerResponse(account.getCustomer()),
-                pixResponse,
                 account.getAccountType(),
                 account.getBalance(),
                 account.getCreatedAt()

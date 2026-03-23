@@ -24,11 +24,7 @@ public class Account {
     @Column(nullable = false, name = "account_type")
     private AccountType accountType;
 
-    @OneToOne(mappedBy = "account", cascade = CascadeType.PERSIST)
-    @JoinColumn(unique = true, name = "pix_key")
-    private PixKey pixKey;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer", nullable = false)
     private Customer customer;
 
@@ -69,14 +65,6 @@ public class Account {
         return customer;
     }
 
-    public void setPixKey(PixKey pixKey) {
-        this.pixKey = pixKey;
-    }
-
-    public PixKey getPixKey() {
-        return pixKey;
-    }
-
     public LocalDate getCreatedAt() {
         return createdAt;
     }
@@ -101,13 +89,6 @@ public class Account {
         }
 
         this.balance -= value;
-    }
-
-    public void addPixKey(PixKey pixKey){
-
-        this.pixKey = pixKey;
-        pixKey.setAccount(this);
-
     }
 
 }

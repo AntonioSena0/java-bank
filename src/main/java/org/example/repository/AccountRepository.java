@@ -15,6 +15,6 @@ public interface AccountRepository {
     AccountResponse find(Long key) throws AccountNotFoundException;
     List<Account> findAll();
     List<Account> findByIdCustomer(Long key) throws AccountNotFoundException;
-    Account findByPixKey(String key) throws  AccountNotFoundException;
+    void delete(Long id) throws AccountNotFoundException;
 
 }

@@ -44,4 +44,16 @@ public class CustomerService {
 
     }
 
+    public CustomerResponse update(CustomerRequest request, Long id) throws AccountNotFoundException{
+
+        return mapper.toCustomerResponse(repository.update(mapper.toCustomer(request), id));
+
+    }
+
+    public void delete(Long id) throws AccountNotFoundException {
+
+        repository.delete(id);
+
+    }
+
 }

@@ -1,7 +1,6 @@
 package org.example.dto;
 
 import org.example.enums.AccountType;
-import org.example.model.Customer;
 
 public record AccountRequest(
 

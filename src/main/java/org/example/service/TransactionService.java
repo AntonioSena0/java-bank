@@ -12,11 +12,9 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepositoryImpl repository;
-    private final TransactionMapper mapper;
 
-    public TransactionService(TransactionRepositoryImpl repository, TransactionMapper mapper) {
+    public TransactionService(TransactionRepositoryImpl repository) {
         this.repository = repository;
-        this.mapper = mapper;
     }
 
     public void deposit(Long account_id, double value) throws AccountNotFoundException{

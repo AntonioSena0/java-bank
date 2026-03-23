@@ -8,7 +8,6 @@ public record AccountResponse(
 
         Long id,
         CustomerResponse customer,
-        PixKeyResponse pixKey,
         AccountType type,
         double balance,
         LocalDate createdAt

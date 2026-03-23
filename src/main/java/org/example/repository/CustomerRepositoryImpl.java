@@ -6,6 +6,7 @@ import org.example.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.LoginException;
 
@@ -39,17 +40,29 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
+    public Customer findByName(String name) {
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            return session.createQuery(
+                            "FROM Customer WHERE name = :name", Customer.class
+                    )
+                    .setParameter("name", name)
+                    .uniqueResult();
+        }
+
+    }
+
+    @Override
     public Customer findByEmail(String email) {
 
         try(Session session = HibernateUtil.getSessionFactory().openSession()){
 
-            Customer customer = session.createQuery(
+            return session.createQuery(
                     "FROM Customer WHERE email = :email", Customer.class
             )
                     .setParameter("email", email)
                     .uniqueResult();
-
-            return customer;
 
         }
 
@@ -87,4 +100,66 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     }
 
+    @Override
+    public Customer update(Customer request, Long id) throws AccountNotFoundException {
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            session.beginTransaction();
+
+            Customer customer = session.find(Customer.class, id);
+
+            if(customer == null){
+                throw new AccountNotFoundException("Cliente inexistente para realizar alteração");
+            }
+
+            if(request.getName() != null) {
+
+                if(findByName(request.getName()) != null){
+                    throw new KeyAlreadyExistsException("Credenciais inválidas para realizar a alteração");
+                }
+
+                customer.setName(request.getName());
+            }
+
+
+            if(request.getEmail() != null){
+
+                if(findByEmail(request.getEmail()) != null){
+                    throw new KeyAlreadyExistsException("Credenciais inválidas para realizar a alteração");
+                }
+
+                customer.setEmail(request.getEmail());
+            }
+
+            session.getTransaction().commit();
+            session.flush();
+
+            return customer;
+
+        }
+
+    }
+
+    @Override
+    public void delete(Long id) throws AccountNotFoundException {
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+
+            session.beginTransaction();
+
+            Customer existCustomer = session.find(Customer.class, id);
+
+            if(existCustomer == null){
+                throw new AccountNotFoundException("Cliente inexistente para realizar a exclusão");
+            }
+
+            session.remove(existCustomer);
+
+            session.getTransaction().commit();
+            session.flush();
+
+        }
+
+    }
 }
