@@ -28,14 +28,15 @@ A estrutura de pacotes principal fica em `src/main/java/org/example`
 - `repository`: classes responsáveis por armazenar e recuperar dados em memória (simulando um repositório).
 - `service`: regras de negócio, validações e operações como saque, depósito e transferência.
 - `util`: classe utilizada para inicialização e definição do hibernate
-- `app`: classe de inicialização da aplicação (ponto de entrada, setup inicial).
+- `view`: interfaces customizadas para a applicação.
+- `Application`: classe de inicialização da aplicação (ponto de entrada, setup inicial).
 
 ### Funcionalidades (segunda versão)
 
 - Criação e gerenciamento de contas bancárias.
 - Operações de depósito, saque e transferência com regras básicas de validação.
 - Visão de administrador com controle de transações e contas.
-- Toda a aplicação containerizada e rodando via docker-compose.
+- Banco de dados rodando via docker-compose.
 - Utilização de Hibernate + PostgreSQL para banco de dados real.
 
 ### Como executar o projeto
@@ -43,24 +44,22 @@ A estrutura de pacotes principal fica em `src/main/java/org/example`
 1. Clone o repositório:
 
    ```bash
-   git clone git@github.com:AntonioSena0/java-bank.git
-   cd java-bank
+   git clone https://github.com/AntonioSena0/java-bank.git
    ```
    
-2. Inicie o container com o Docker
+2. Acesse o projeto e inicie o banco de dados com o Docker
    ```bash
    docker compose up -d
    ```
    
-3. Rode a aplicação através do arquivo app
+3. Rode a aplicação através do arquivo Application
    ``` bash
-   mvn compile exec:java
+   mvn clean package ; mvn compile exec:java
    ```
 
 ### Próximos passos e melhorias:
 
 #### Algumas ideias de evolução para as próximas versões:
 - Camada de API REST usando Spring Boot.
-- Autenticação de usuários e segurança.
 - Testes unitários e de integração.
 - Tratamento mais robusto de erros e validações.
