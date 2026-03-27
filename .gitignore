@@ -1,42 +1,34 @@
-.idea/
-.env
+bank/.idea/
+bank/.env
+bank/target/
+bank/.mvn
 
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+### IDEs ###
+bank/.apt_generated
+bank/.classpath
+bank/.factorypath
+bank/.project
+bank/.settings/
+bank/.springBeans
+bank/.sts4-cache
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+bank/*.iws
+bank/*.iml
+bank/*.ipr
 
 ### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+bank/nbproject/private/
+bank/nbbuild/
+bank/dist/
+bank/nbdist/
+bank/.nb-gradle/
+bank/build/
 
 ### VS Code ###
-.vscode/
+bank/.vscode/
 
-### Mac OS ###
-.DS_Store
+### Exceções: não ignore target/build dentro de src/main e src/test ###
+!bank/src/main/**/target/
+!bank/src/test/**/target/
+!bank/src/main/**/build/
+!bank/src/test/**/build/
