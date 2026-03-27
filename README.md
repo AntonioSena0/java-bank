@@ -1,24 +1,26 @@
 # java-bank
 
-Um sistema bancário simples feito em Java 17, desenvolvido com foco em estudos de orientação a objetos, camadas de serviço e boas práticas de código.
-
+Este repositório contém a nova versão do **java-bank**, agora usando Spring Boot e Docker para evoluir o sistema bancário que comecei em Java puro e Hibernate. O objetivo é transformar esse projeto em uma API REST robusta, escalável e pronta para produção.
 ## Objetivo do projeto
 
-- Simular operações básicas de um banco (criação de contas, depósitos, saques, transferências e histórico de transações).
-- Servir como base para evolução contínua conforme meu aprendizado em Java.
+- Migrar a aplicação legada em Java/Hibernate para Spring Boot.
+- Expor operações bancárias via API REST (contas, clientes, transações).
+- Containerizar a aplicação com Docker para facilitar desenvolvimento e deploy.
+- Praticar boas práticas de arquitetura, testes e documentação.
 
-## Primeira Versão
+## Segunda Versão
 
 ### Tecnologias utilizadas
 
 - **Linguagem:** Java 17
-- **ORM** Hibernate
-- **Database** PostgreSQL
+- **Framework:** Spring Boot
+- **Database:** PostgreSQL
+- **Containerização:** Docker e Docker Compose
 - **Build:** Maven (`pom.xml`)
 
 ### Estrutura do projeto
 
-A estrutura de pacotes principal fica em `src/main/java/org/example`
+A estrutura de pacotes principal fica em `src/main/java/dev/java/bank`
 
 - `controller`: orquestra chamadas entre camada de serviço e camada de modelo.
 - `dto`: records responsáveis pelo cuidado com os dados evitando vazamentos desnecessários
@@ -27,7 +29,6 @@ A estrutura de pacotes principal fica em `src/main/java/org/example`
 - `model`: entidades de domínio do sistema bancário (contas, clientes, transações etc.).
 - `repository`: classes responsáveis por armazenar e recuperar dados em memória (simulando um repositório).
 - `service`: regras de negócio, validações e operações como saque, depósito e transferência.
-- `util`: classe utilizada para inicialização e definição do hibernate
 - `view`: interfaces customizadas para a applicação.
 - `Application`: classe de inicialização da aplicação (ponto de entrada, setup inicial).
 
@@ -47,19 +48,21 @@ A estrutura de pacotes principal fica em `src/main/java/org/example`
    git clone https://github.com/AntonioSena0/java-bank.git
    ```
    
-2. Acesse o projeto e inicie o banco de dados com o Docker
+2. Acesse o projeto e inicie a aplicação com o Docker
    ```bash
    docker compose up -d
    ```
    
-3. Rode a aplicação através do arquivo Application
+3. Verifique se o container está executando
+   - Se não estiver, tente rodar a aplicação manualmente
    ``` bash
-   mvn clean package ; mvn compile exec:java
+   docker ps
    ```
 
 ### Próximos passos e melhorias:
 
-#### Algumas ideias de evolução para as próximas versões:
-- Camada de API REST usando Spring Boot.
-- Testes unitários e de integração.
-- Tratamento mais robusto de erros e validações.
+#### Algumas ideias de evolução:
+- Implementar as entidades e relacionamentos do domínio bancário.
+- Criar os primeiros endpoints REST.
+- Adicionar testes unitários e de integração.
+- Melhorar documentação da API (Swagger/OpenAPI).
